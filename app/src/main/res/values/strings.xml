@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">WOL/shutdown Helper</string>
+    <string name="tile_wakeup_name">Wake up PC</string>
+    <string name="tile_shutdown_name">Shutdown PC</string>
+</resources>

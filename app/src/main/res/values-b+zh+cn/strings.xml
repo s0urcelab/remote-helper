@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">远程开关机助手</string>
+    <string name="tile_wakeup_name">PC唤醒</string>
+    <string name="tile_shutdown_name">PC关机</string>
+</resources>
