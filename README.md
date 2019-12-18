@@ -1,4 +1,6 @@
 # remote-helper
-WOL/shutdown Helper（远程开关机助手） 
+WOL/shutdown Helper
 
-酷安：https://www.coolapk.com/apk/249229
+provide a QuickSetting button to power on/off your PC.
+
+implement by WOL & SSH
