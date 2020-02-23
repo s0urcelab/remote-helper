@@ -260,7 +260,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="6dp"
                         android:layout_marginBottom="5dp"
-                        android:text="version 1.0"
+                        android:text="version 1.1"
                         android:textStyle="bold"
                         android:textSize="13sp" />
 

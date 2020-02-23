@@ -3,6 +3,15 @@ package com.sourcelab.remoteHelper
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.AsyncTask
+import com.jcraft.jsch.ChannelExec
+import com.jcraft.jsch.JSch
+import com.jcraft.jsch.JSchException
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.util.*
 
 object HexUtils {
 
@@ -92,5 +101,86 @@ object AppPreferences {
 
     fun getVal(KEY_NAME: String): String? {
         return preferences.getString(KEY_NAME, "")
+    }
+}
+
+object Common {
+    /**
+     * 构造magic魔术包
+     * @param mac    mac
+     * @return 包文
+     */
+    fun generateMagicPackage(mac: String) : String {
+        var magicString = ""
+        val COMMON_HEAD = "FFFFFFFFFFFF"
+        for (i in 0..15) {
+            magicString += mac
+        }
+        return COMMON_HEAD + magicString
+    }
+
+    /**
+     * 网络唤醒
+     * @param host        主机地址
+     * @param mac        mac地址
+     * @param port       端口
+     */
+    fun wakeUp(host: String, mac: String, port: Int) : Boolean {
+        //构建magic魔术包
+        val magicPacage = generateMagicPackage(mac)
+        val MPBinary = HexUtils.hexStringToBytes(magicPacage)
+        try {
+            val socket = DatagramSocket()
+            val address = InetAddress.getByName(host)
+            val packet = DatagramPacket(MPBinary, MPBinary.size, address, port)
+            //发送唤醒包
+            socket.send(packet)
+            socket.close()
+        } catch (e: IOException) {
+//            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    fun executeRemoteCommand(username: String,
+                             password: String,
+                             hostname: String,
+                             cmd: String,
+                             port: Int): String {
+
+        try {
+            val jsch = JSch()
+            val session = jsch.getSession(username, hostname, port)
+            session.setPassword(password)
+
+            // Avoid asking for key confirmation.
+            val properties = Properties()
+            properties.put("StrictHostKeyChecking", "no")
+            session.setConfig(properties)
+
+            session.connect()
+
+            // Create SSH Channel.
+            val sshChannel = session.openChannel("exec") as ChannelExec
+            val outputStream = ByteArrayOutputStream()
+            sshChannel.outputStream = outputStream
+
+            // Execute command.
+            sshChannel.setCommand(cmd)
+            sshChannel.connect()
+
+            // Sleep needed in order to wait long enough to get result back.
+            Thread.sleep(1_000)
+            sshChannel.disconnect()
+
+            session.disconnect()
+
+            return outputStream.toString()
+
+        } catch (e: JSchException) {
+//            e.printStackTrace()
+            return e.message.toString()
+        }
     }
 }

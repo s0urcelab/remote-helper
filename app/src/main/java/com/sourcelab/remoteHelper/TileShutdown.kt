@@ -15,47 +15,6 @@ import java.util.*
 
 class TileShutdown: TileService(){
 
-    fun executeRemoteCommand(username: String,
-                             password: String,
-                             hostname: String,
-                             cmd: String,
-                             port: Int): String {
-
-        try {
-            val jsch = JSch()
-            val session = jsch.getSession(username, hostname, port)
-            session.setPassword(password)
-
-            // Avoid asking for key confirmation.
-            val properties = Properties()
-            properties.put("StrictHostKeyChecking", "no")
-            session.setConfig(properties)
-
-            session.connect()
-
-            // Create SSH Channel.
-            val sshChannel = session.openChannel("exec") as ChannelExec
-            val outputStream = ByteArrayOutputStream()
-            sshChannel.outputStream = outputStream
-
-            // Execute command.
-            sshChannel.setCommand(cmd)
-            sshChannel.connect()
-
-            // Sleep needed in order to wait long enough to get result back.
-            Thread.sleep(1_000)
-            sshChannel.disconnect()
-
-            session.disconnect()
-
-            return outputStream.toString()
-
-        } catch (e: JSchException) {
-//            e.printStackTrace()
-            return e.message.toString()
-        }
-    }
-
     override fun onClick() {
         super.onClick()
 
@@ -78,7 +37,7 @@ class TileShutdown: TileService(){
                     .show()
             } else {
                 AsyncUtils.doAsync {
-                    val output = executeRemoteCommand(name, pw, host, cmd, if (port == null || port.isEmpty()) 22 else port.toInt())
+                    val output = Common.executeRemoteCommand(name, pw, host, cmd, if (port == null || port.isEmpty()) 22 else port.toInt())
                     uiHandler.post {
                         Toast.makeText(this@TileShutdown, if (output.isEmpty()) "命令已执行" else output, Toast.LENGTH_LONG)
                             .show()
